@@ -1,11 +1,12 @@
-﻿# log-off-idle-sessions.ps1
+﻿# Logoff-IdleSessions.ps1
 
+# edit this value to adjust how long a user has to be idle before the script will log them off
 $IdleThreshold = 180 #minutes
 
-Start-Transcript -Append -Path C:\Temp\log-off-idle-sessions.log
+# edit this line if you don't want logging to go to C:\Temp
+Start-Transcript -Append -Path C:\Temp\Logoff-IdleSessions.log
 
-# using quser, get the users and turn them into objects using new-object
-
+# using quser, we're going to get the user info and turn them all into objects using new-object
 $loggedonusers = try {
     quser | Select-Object -Skip 1 | ForEach-Object {
         $CurrentLine = $_.Trim() -Replace '\s+',' ' -Split '\s'
@@ -33,20 +34,17 @@ $loggedonusers = try {
     } | Select-Object -Property UserName,ComputerName,SessionName,Id,State,IdleTime,LogonTime,Error
 }
 
-# now that we have all the users as objects, we iterate through them with simple if/then statements
+# now that we have all the users as objects, we iterate through them with simple if/else statements
 
 Foreach($user in $loggedonusers){
     if ($user.SessionName -eq 'console') {
-        "$($user.UserName) on session $($user.Id) is logged into the console and not eligible to be logged off. Idle time reported is $($user.IdleTime)"
-    } else { 
-#        possible bug: $user.IdleTime is a string that should only equal 'none' or a number. If this were to ever not be the case, you may have to nest another try/catch here if [int]$user.IdleTime errors out
-        if ($user.IdleTime -eq 'none') {
-            "$($user.UserName) on session $($user.Id) is not logged into the console, but hasn't been idle long enough to be logged off. Idle for $($user.IdleTime)"
-        }
-        if ([int]$user.IdleTime -lt $IdleThreshold) {
-            "$($user.UserName) on session $($user.Id) is not logged into the console, but hasn't been idle long enough to be logged off. Idle for $([int]$user.IdleTime)"
-        }
-        elseif ([int]$user.IdleTime -gt $IdleThreshold) {
+        "$($user.UserName) on session $($user.Id) is logged into the console and not eligible to be logged off"
+    } elseif ($user.State -eq 'Disc') {
+        if ($user.IdleTime -eq 'none' -or '.') {
+            "$($user.UserName) on session $($user.Id) is not logged into the console, but hasn't been idle long enough to be logged off. Idle for 0 minutes"
+        } elseif ([int]$user.IdleTime -lt $IdleThreshold) {
+            "$($user.UserName) on session $($user.Id) is not logged into the console, but hasn't been idle long enough to be logged off. Idle for $([int]$user.IdleTime) minutes"
+        } elseif ([int]$user.IdleTime -gt $IdleThreshold) {
             "$($user.UserName) on session $($user.Id) is idle for $([int]$user.IdleTime) and will be logged off"
             try {
                 logoff $user.Id
@@ -55,8 +53,10 @@ Foreach($user in $loggedonusers){
                 "Error in logging user off"
             }
         } else {
-            "Something else happened. $($user.SessionName) was not logged off."
+            "Error in determining IdleTime. $($user.SessionName) was not logged off."
         }
+    } else {
+        "Something else happened. $($user.SessionName) was not logged off."
     }
 }
 Stop-Transcript
