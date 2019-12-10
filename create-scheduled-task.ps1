@@ -1,4 +1,6 @@
-﻿#copy script to correct location
+﻿#This script is intended to be deployed using PDQ or other for the purposes of creating a scheduled task for LogOff-IdleSessions.ps1 to run
+
+#copy script to correct location
 robocopy . C:\Windows\System32\WindowsPowerShell\v1.0\Scripts\ LogOff-IdleSessions.ps1
 
 #creates a scheduled task that will run at logon and repeat every hour
