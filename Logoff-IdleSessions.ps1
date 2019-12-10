@@ -11,19 +11,16 @@ $loggedonusers = try {
     quser | Select-Object -Skip 1 | ForEach-Object {
         $CurrentLine = $_.Trim() -Replace '\s+',' ' -Split '\s'
         $HashProps = @{UserName = $CurrentLine[0]}
-#        LogonTime is no longer used in this script, but I'm keeping it here in case of future development
+
         if ($CurrentLine[2] -eq 'Disc') {
                 $HashProps.SessionName = $null
                 $HashProps.Id = $CurrentLine[1]
                 $HashProps.State = $CurrentLine[2]
-                $HashProps.IdleTime = $CurrentLine[3]
-#                $HashProps.LogonTime = $CurrentLine[4..6] -join ' '
-#                $HashProps.LogonTime = $CurrentLine[4..($CurrentLine.GetUpperBound(0))] -join ' '        } else {
+                $HashProps.IdleTime = $CurrentLine[3]        } else {
                 $HashProps.SessionName = $CurrentLine[1]
                 $HashProps.Id = $CurrentLine[2]
                 $HashProps.State = $CurrentLine[3]
-                $HashProps.IdleTime = $CurrentLine[4]
-#                $HashProps.LogonTime = $CurrentLine[5..($CurrentLine.GetUpperBound(0))] -join ' '        }
+                $HashProps.IdleTime = $CurrentLine[4]        }
         New-Object -TypeName PSCustomObject -Property $HashProps |
         Select-Object -Property UserName,ComputerName,SessionName,Id,State,IdleTime,LogonTime,Error
     }
@@ -45,7 +42,7 @@ foreach($user in $loggedonusers){
             if ([int]$user.IdleTime -lt $IdleThreshold) {
                 "$($user.UserName) on session $($user.Id) is not logged into the console, but hasn't been idle long enough to be logged off. Idle for $([int]$user.IdleTime) minutes"
             }
-            elseif ([int]$user.IdleTime -gt $IdleThreshold) {
+            elseif ([int]$user.IdleTime -ge $IdleThreshold) {
                 "$($user.UserName) on session $($user.Id) is idle for $([int]$user.IdleTime) and will be logged off" 
                 try {
                     logoff $user.Id
