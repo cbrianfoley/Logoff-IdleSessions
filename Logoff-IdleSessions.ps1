@@ -16,7 +16,8 @@ $loggedonusers = try {
                 $HashProps.SessionName = $null
                 $HashProps.Id = $CurrentLine[1]
                 $HashProps.State = $CurrentLine[2]
-                $HashProps.IdleTime = $CurrentLine[3]        } else {
+                $HashProps.IdleTime = $CurrentLine[3]        } 
+        else {
                 $HashProps.SessionName = $CurrentLine[1]
                 $HashProps.Id = $CurrentLine[2]
                 $HashProps.State = $CurrentLine[3]
@@ -36,25 +37,21 @@ $loggedonusers = try {
 foreach($user in $loggedonusers){
     if ($user.SessionName -eq 'console') {
         "$($user.UserName) on session $($user.Id) is logged into the console and not eligible to be logged off"
-    }
-    elseif ($user.State -eq 'Disc') {
+    } else {
         try {
             if ([int]$user.IdleTime -lt $IdleThreshold) {
                 "$($user.UserName) on session $($user.Id) is not logged into the console, but hasn't been idle long enough to be logged off. Idle for $([int]$user.IdleTime) minutes"
-            }
-            elseif ([int]$user.IdleTime -ge $IdleThreshold) {
+            } 
+            if ([int]$user.IdleTime -ge $IdleThreshold) {
                 "$($user.UserName) on session $($user.Id) is idle for $([int]$user.IdleTime) and will be logged off" 
-                try {
-                    logoff $user.Id
+                try { logoff $user.Id
                     "$($user.UserName) has been logged off"
-                }
-                catch {
+                } catch {
                     "Error in logging user off"
                 }
             }
-        }
-        catch{
-            "$($user.UserName) on session $($user.Id) is not logged into the console, but hasn't been idle long enough to be logged off. Idle for $($user.IdleTime) minutes"
+        } catch {
+            "User $($user.UserName) was not logged off. Idle time reported is not an integer. Idle time reported is '$($user.IdleTime)'"
         }
     }
 }
