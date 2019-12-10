@@ -40,7 +40,7 @@ foreach($user in $loggedonusers){
     if ($user.SessionName -eq 'console') {
         "$($user.UserName) on session $($user.Id) is logged into the console and not eligible to be logged off"
     }
-    if ($user.State -eq 'Disc') {
+    elseif ($user.State -eq 'Disc') {
         try {
             if ([int]$user.IdleTime -lt $IdleThreshold) {
                 "$($user.UserName) on session $($user.Id) is not logged into the console, but hasn't been idle long enough to be logged off. Idle for $([int]$user.IdleTime) minutes"
@@ -50,7 +50,7 @@ foreach($user in $loggedonusers){
                 try {
                     logoff $user.Id
                     "$($user.UserName) has been logged off"
-                } 
+                }
                 catch {
                     "Error in logging user off"
                 }
