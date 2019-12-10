@@ -21,7 +21,8 @@ $loggedonusers = try {
             $HashProps.SessionName = $CurrentLine[1]
             $HashProps.Id = $CurrentLine[2]
             $HashProps.State = $CurrentLine[3]
-            $HashProps.IdleTime = $CurrentLine[4]        }
+            $HashProps.IdleTime = $CurrentLine[4]
+        }
         New-Object -TypeName PSCustomObject -Property $HashProps |
         Select-Object -Property UserName,ComputerName,SessionName,Id,State,IdleTime,LogonTime,Error
     }
