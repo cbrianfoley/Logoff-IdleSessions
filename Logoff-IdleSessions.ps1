@@ -36,27 +36,29 @@ $loggedonusers = try {
 
 # now that we have all the users as objects, we iterate through them with simple if/else statements
 
-Foreach($user in $loggedonusers){
+foreach($user in $loggedonusers){
     if ($user.SessionName -eq 'console') {
         "$($user.UserName) on session $($user.Id) is logged into the console and not eligible to be logged off"
-    } elseif ($user.State -eq 'Disc') {
-        if ($user.IdleTime -eq 'none' -or '.') {
-            "$($user.UserName) on session $($user.Id) is not logged into the console, but hasn't been idle long enough to be logged off. Idle for 0 minutes"
-        } elseif ([int]$user.IdleTime -lt $IdleThreshold) {
-            "$($user.UserName) on session $($user.Id) is not logged into the console, but hasn't been idle long enough to be logged off. Idle for $([int]$user.IdleTime) minutes"
-        } elseif ([int]$user.IdleTime -gt $IdleThreshold) {
-            "$($user.UserName) on session $($user.Id) is idle for $([int]$user.IdleTime) and will be logged off"
-            try {
-                logoff $user.Id
-                "$($user.UserName) has been logged off"
-            } catch {
-                "Error in logging user off"
+    }
+    if ($user.State -eq 'Disc') {
+        try {
+            if ([int]$user.IdleTime -lt $IdleThreshold) {
+                "$($user.UserName) on session $($user.Id) is not logged into the console, but hasn't been idle long enough to be logged off. Idle for $([int]$user.IdleTime) minutes"
             }
-        } else {
-            "Error in determining IdleTime. $($user.SessionName) was not logged off."
+            elseif ([int]$user.IdleTime -gt $IdleThreshold) {
+                "$($user.UserName) on session $($user.Id) is idle for $([int]$user.IdleTime) and will be logged off" 
+                try {
+                    logoff $user.Id
+                    "$($user.UserName) has been logged off"
+                } 
+                catch {
+                    "Error in logging user off"
+                }
+            }
         }
-    } else {
-        "Something else happened. $($user.SessionName) was not logged off."
+        catch{
+            "$($user.UserName) on session $($user.Id) is not logged into the console, but hasn't been idle long enough to be logged off. Idle for $($user.IdleTime) minutes"
+        }
     }
 }
 Stop-Transcript
