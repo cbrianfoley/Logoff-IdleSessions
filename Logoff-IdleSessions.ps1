@@ -16,25 +16,29 @@ $loggedonusers =
             $HashProps.SessionName = $null
             $HashProps.Id = $CurrentLine[1]
             $HashProps.State = $CurrentLine[2]
-            if ($CurrentLine[4] -eq'none' -or $null) { 
+            if ($CurrentLine[3] -eq 'none' -or $null) { # quser IdleTime can report a variety of things, $HashProps.Idletime needs to be the correct timespan
                 $HashProps.Idletime = [timespan]0
-            } elseif ($CurrentLine[4] -like '*+**:**') { 
-                $CurrentLine[4]+=':00'
-                $HashProps.Idletime = [timespan]$CurrentLine[4].Replace('+',':')
+            } elseif ($CurrentLine[3] -like '*+*:*') { 
+                $CurrentLine[3]+= ':00'
+                $HashProps.Idletime = [timespan]$CurrentLine[3].Replace('+',':')
+            } elseif ($CurrentLine[3] -like '*:*') { 
+                $HashProps.Idletime = [timespan]$CurrentLine[3]
             } else { 
-                $HashProps.IdleTime = [timespan]$CurrentLine[3]
+                $HashProps.IdleTime = New-Timespan -Minutes $CurrentLine[3]
             }
         } else {
             $HashProps.SessionName = $CurrentLine[1]
             $HashProps.Id = $CurrentLine[2]
             $HashProps.State = $CurrentLine[3]
-            if ($CurrentLine[4] -eq "none" -or $null) { 
+            if ($CurrentLine[4] -eq 'none' -or $null) { # quser IdleTime can report a variety of things, $HashProps.Idletime needs to be the correct timespan
                 $HashProps.Idletime = [timespan]0
-            } elseif ($CurrentLine[4] -like '*+**:**') { 
-                $CurrentLine[4]+=':00'
+            } elseif ($CurrentLine[4] -like '*+*:*') { 
+                $CurrentLine[4]+= ':00'
                 $HashProps.Idletime = [timespan]$CurrentLine[4].Replace('+',':')
+            } elseif ($CurrentLine[4] -like '*:*') { 
+                $HashProps.Idletime = [timespan]$CurrentLine[4]
             } else { 
-                $HashProps.IdleTime = [timespan]$CurrentLine[4]
+                $HashProps.IdleTime = New-Timespan -Minutes $CurrentLine[4]
             }
         }
         New-Object -TypeName PSCustomObject -Property $HashProps |
