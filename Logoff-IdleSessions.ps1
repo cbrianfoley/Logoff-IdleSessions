@@ -7,7 +7,7 @@ $IdleThreshold = New-TimeSpan -Minutes 180
 Start-Transcript -Append -Path C:\Temp\Logoff-IdleSessions.log
 
 # using quser, we're going to get the user info and turn them all into objects using new-object
-$loggedonusers = try {
+$loggedonusers = 
     quser | Select-Object -Skip 1 | ForEach-Object {
         $CurrentLine = $_.Trim() -Replace '\s+',' ' -Split '\s'
         $HashProps = @{UserName = $CurrentLine[0]}
@@ -16,22 +16,20 @@ $loggedonusers = try {
             $HashProps.SessionName = $null
             $HashProps.Id = $CurrentLine[1]
             $HashProps.State = $CurrentLine[2]
-            $HashProps.IdleTime = [timespan]$CurrentLine[3]
+            if ($CurrentLine[4] -eq'none' -or $null) { $HashProps.Idletime = [timespan]0
+            } else {$HashProps.IdleTime = [timespan]$CurrentLine[3]
+            }
         } else {
             $HashProps.SessionName = $CurrentLine[1]
             $HashProps.Id = $CurrentLine[2]
             $HashProps.State = $CurrentLine[3]
-            $HashProps.IdleTime = [timespan]$CurrentLine[4]
+            if ($CurrentLine[4] -eq "none" -or $null) { $HashProps.Idletime = [timespan]0
+            } else {$HashProps.IdleTime = [timespan]$CurrentLine[4]
+            }
         }
         New-Object -TypeName PSCustomObject -Property $HashProps |
         Select-Object -Property UserName,ComputerName,SessionName,Id,State,IdleTime,LogonTime,Error
     }
-} catch {
-    New-Object -TypeName PSCustomObject -Property @{
-        ComputerName = "localhost"
-        Error = $_.Exception.Message
-    } | Select-Object -Property UserName,ComputerName,SessionName,Id,State,IdleTime,LogonTime,Error
-}
 
 # now that we have all the users as objects, we iterate through them with simple if/else statements
 
