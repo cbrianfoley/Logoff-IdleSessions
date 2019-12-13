@@ -16,15 +16,25 @@ $loggedonusers =
             $HashProps.SessionName = $null
             $HashProps.Id = $CurrentLine[1]
             $HashProps.State = $CurrentLine[2]
-            if ($CurrentLine[4] -eq'none' -or $null) { $HashProps.Idletime = [timespan]0
-            } else {$HashProps.IdleTime = [timespan]$CurrentLine[3]
+            if ($CurrentLine[4] -eq'none' -or $null) { 
+                $HashProps.Idletime = [timespan]0
+            } elseif ($CurrentLine[4] -like '*+**:**') { 
+                $CurrentLine[4]+=':00'
+                $HashProps.Idletime = [timespan]$CurrentLine[4].Replace('+',':')
+            } else { 
+                $HashProps.IdleTime = [timespan]$CurrentLine[3]
             }
         } else {
             $HashProps.SessionName = $CurrentLine[1]
             $HashProps.Id = $CurrentLine[2]
             $HashProps.State = $CurrentLine[3]
-            if ($CurrentLine[4] -eq "none" -or $null) { $HashProps.Idletime = [timespan]0
-            } else {$HashProps.IdleTime = [timespan]$CurrentLine[4]
+            if ($CurrentLine[4] -eq "none" -or $null) { 
+                $HashProps.Idletime = [timespan]0
+            } elseif ($CurrentLine[4] -like '*+**:**') { 
+                $CurrentLine[4]+=':00'
+                $HashProps.Idletime = [timespan]$CurrentLine[4].Replace('+',':')
+            } else { 
+                $HashProps.IdleTime = [timespan]$CurrentLine[4]
             }
         }
         New-Object -TypeName PSCustomObject -Property $HashProps |
